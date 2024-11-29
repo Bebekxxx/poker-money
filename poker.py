@@ -5,7 +5,7 @@
 #Dodałem funkcję sprawdz_stan_gry, która sprawdza czy gra się skończyła
 #Dodałem funkcję akcje_gracza, która odpowiada za akcje gracza
 #Dodałem funkcję ustaw_blindy, która ustawia blinde
-#Dodałem funkcję dodaj_graczy_i_ustaw_kwoty_startowe, która dodaje graczy i ustawia kwoty startowe
+#Dodałem funkcję dodaj_graczy, która dodaje graczy i ustawia kwoty startowe
 #Dodałem funkcję wprowadz_blindy, która wprowadza wartości blindów
 #Dodałem zmienną globalną karty_na_stole, która odpowiada za ilość kart na stole
 #Dodałem zmienną globalną big_blind, która odpowiada za wartość dużego blinda
