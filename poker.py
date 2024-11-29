@@ -17,6 +17,7 @@
 #Dodałem zmienną globalną ilu_graczy, która odpowiada za ilość graczy
 #Dodałem zmienną globalną karty, która odpowiada za wartość kart
 #Dodałem zmienną globalną karty_na_stole, która odpowiada za wartość kart na stole
+#Dodałem zmienną globalną check_counter, która odpowiada za wartość checków
 
 
 gracze = []
