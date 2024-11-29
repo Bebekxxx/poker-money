@@ -164,3 +164,4 @@ if __name__ == "__main__":
     gra()
 
 #Chuje muje dzikie węże siur123
+#hsadayusgfyuasydfytsafdtyf
