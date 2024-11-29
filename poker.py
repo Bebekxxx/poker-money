@@ -165,3 +165,5 @@ if __name__ == "__main__":
 
 #Chuje muje dzikie węże siur123
 #hsadayusgfyuasydfytsafdtyf
+#kakakaskaskdaksdkasdka
+#chuj strartasdasdasd
