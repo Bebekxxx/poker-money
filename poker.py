@@ -5,9 +5,11 @@
 import time
 
 gracze = []
+temp_gracze = []
 pieniadze = []
 bets = []
 temp_bets = []
+foldy = []
 pula = 0
 small_blind = 0
 big_blind = 0
@@ -22,13 +24,25 @@ def wprowadz_blindy():
     print("\n")
 
 def dodaj_graczy():
-    global gracze, pieniadze, bets
+    global gracze,temp_gracze, pieniadze, bets
     liczbaGraczy = int(input("Podaj liczbę graczy: "))
-    for gracz in range(liczbaGraczy):
-        gracze.append(input(f"Podaj nazwę gracza {gracz + 1}: "))
-        pieniadze.append(int(input(f"Ile pieniędzy ma {gracze[gracz]}? ")))
+    for index in range(liczbaGraczy):
+        gracz = input(f"Podaj nazwę gracza {index + 1}: ")
+        gracze.append(gracz)
+        temp_gracze.append(gracz)
+        pieniadzeDanegoGracza = int(input(f"Ile pieniędzy ma {gracze[index]}? "))
+        pieniadze.append(pieniadzeDanegoGracza)
         bets.append(0)
         temp_bets.append(0)
+    print(f"Tablica gracze: {gracze}")
+    print(f"Tablica temp_gracze: {temp_gracze}")
+    print(f"Pieniadze graczy: {pieniadze}")
+
+def odnowListeGraczy():
+    temp_gracze.clear()
+    for index in gracze:
+        temp_gracze.append(index)
+    print(f"Odnowiona lista graczy: {temp_gracze}")
 
 def ustaw_blindy():
     global pula
@@ -42,9 +56,15 @@ def ustaw_blindy():
         print(f"Gracz {gracze[0]} postawił małego blinda, a gracz {gracze[1]} postawił dużego blinda\n")
 
 def przesunIndexGraczy():
-    pierwszyElemnt = gracze.pop(0)
-    gracze.append(pierwszyElemnt)
-    print("Gracze: ", gracze)
+    pierwszyElementGracz = temp_gracze.pop(0)
+    temp_gracze.append(pierwszyElementGracz)
+    print("Gracze: ", temp_gracze)
+    pierwszyElementPieniadze = pieniadze.pop(0)
+    pieniadze.append(pierwszyElementPieniadze)
+    print("Pieniadze: ", pieniadze)
+    pierwszyElemntBet = bets.pop(0)
+    pieniadze.append(pierwszyElemntBet)
+    print("Bety: ", bets)
 
 def wyrownajZaklad(id_gracza): # Oddzielna funkcja wywoływana gdy chcesz wyrownac ale nie przbijac zakladu
     global najwyzszyBet,pula
@@ -84,26 +104,36 @@ def podbijZaklad(id_gracza, podbicie): # Oddzielna funkcja wywoływana gdy chces
 
 def check(id_gracza):
     global check_counter
-    print(f"Gracz {gracze[id_gracza]} checkuje")
+    print(f"Gracz {temp_gracze[id_gracza]} checkuje")
     check_counter += 1
     print(f"check_counter:{check_counter} \n")
 
-def fold(id_gracza, passy):
-    passy.append(id_gracza)
+def fold(id_gracza):
+    global temp_gracze
+    #temp_gracze.pop(id_gracza)
     print(f"Gracz {gracze[id_gracza]} passuje\n")
+    foldy.append(gracze[id_gracza])
 
-def akcje_gracza(id_gracza, passy):
+
+def sprawdzFold(id_gracza):
+    global temp_gracze
+    if temp_gracze[id_gracza] in foldy:
+        return True
+    else:
+        return False
+
+def akcje_gracza(id_gracza):
     global najwyzszyBet, pula
-    print(f"Aktualny gracz to {gracze[id_gracza]}")
+    print(f"Aktualny gracz to {temp_gracze[id_gracza]}")
     print(f"Aktualna pula na stole wynosi: {pula}")
     if najwyzszyBet == 0 or bets[id_gracza] == najwyzszyBet:
         wartosc = int(input(f"Twoje opcje to:\n"
                             f"1. Podnieś zakład(raise), 2. Sprawdz(check), 3. Pass(fold)\n"
                             f"Twoj zakład na stole wynosi: {temp_bets[id_gracza]}\n"
-                            f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+                            f"{temp_gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
         while wartosc not in [1, 2, 3]:
             print("Podano nieprawidłową opcję!")
-            wartosc = int(input(f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+            wartosc = int(input(f"{temp_gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
         if wartosc == 1:
             podbicie = int(input("Podaj o ile podbijasz: "))
             while podbicie > pieniadze[id_gracza]:
@@ -113,7 +143,7 @@ def akcje_gracza(id_gracza, passy):
         elif wartosc == 2:
             check(id_gracza)
         elif wartosc == 3:
-            fold(id_gracza, passy)
+            fold(id_gracza)
 
     elif bets[id_gracza] < najwyzszyBet:
         wartosc = int(input(f"Twoje opcje to:\n"
@@ -143,12 +173,12 @@ def akcje_gracza(id_gracza, passy):
                 if czyWchodziszAllIn == 1:
                     wyrownajZaklad(id_gracza)
                 elif czyWchodziszAllIn == 2:
-                    fold(id_gracza, passy)
+                    fold(id_gracza)
             else:
                 wyrownajZaklad(id_gracza)
                 check(id_gracza)
         elif wartosc == 3:
-            fold(id_gracza, passy)
+            fold(id_gracza)
     else:
         print("Coś poszło nie tak")
         print(f"Twoje zakłady: {bets[id_gracza]}")
@@ -159,24 +189,34 @@ def akcje_gracza(id_gracza, passy):
         time.sleep(1000)
 
 def sprawdzStanRundy():
-    global pula, karty_na_stole, check_counter, najwyzszyBet
-    if check_counter == len(gracze):
+    global pula, karty_na_stole, check_counter, najwyzszyBet, temp_gracze
+    if check_counter == (len(temp_gracze) - len(foldy)):
         print("Wykładaj kolejna karte na stół")
         karty_na_stole += 1
         check_counter = 0
         najwyzszyBet = 0
-        for element in bets:
-            element = 0
+        for i in range(0, len(bets)):
+            bets[i] = 0
             print("Bety zostały wyzerowane")
-    if karty_na_stole >= 5:
+        print(bets)
+    if karty_na_stole > 5:
         print("5 kart na stole, czas na pokazanie rąk!")
-        #twmp bwt zerowanie
-        for element in temp_bets:
-            element = 0
+        #tempbet zerowanie
+        for i in range(0, len(temp_bets)):
+            temp_bets[i] = 0
             print("Temp_Bety zostały wyzerowane")
         karty_na_stole = 3
         return False
     return True
+
+def sprawdzBankrut():
+    for i in range(len(pieniadze)):
+        if pieniadze[i] == 0:
+            print(f"Gracz {gracze[i]} zbankrutował i odpada z gry!")
+            gracze.pop(i)
+            pieniadze.pop(i)
+            bets.pop(i)
+            break
 
 def wybierz_zwyciezce():
     global pula
@@ -186,37 +226,40 @@ def wybierz_zwyciezce():
     winner = int(input("\nZwycięzca: ")) - 1
     pieniadze[winner] += pula
     pula = 0
-    for i in range(len(bets)):
-        bets[i] = 0
-    for i in range(len(pieniadze)):
-        if pieniadze[i] == 0:
-            print(f"Gracz {gracze[i]} zbankrutował i odpada z gry!")
-            gracze.pop(i)
-            pieniadze.pop(i)
-            bets.pop(i)
-            break
 
+#Glowna funkcja gry
 def gra():
+    global gracze, temp_gracze, check_counter
     dodaj_graczy()
     wprowadz_blindy()
     while True:
-        passy = []
-        id_gracza = -1
+        id_gracza = 0
         ustaw_blindy()
         while True:
-            if len(passy) == len(gracze) - 1:
-                break
-            id_gracza += 1
-            if id_gracza == len(gracze):
+            #print(f"aktualne id gracza {temp_gracze[id_gracza]}(na poczatku funkcji) {id_gracza}")
+            #print(f"Tab Gracze: {temp_gracze}")
+
+            if id_gracza == (len(temp_gracze) - len(foldy)):
+                print("wyzerowano id gracza")
                 id_gracza = 0
-            if id_gracza in passy:
-                id_gracza += 1
-                continue
-            akcje_gracza(id_gracza, passy)
+
+            if sprawdzFold(id_gracza):
+                check_counter += 1
+                if id_gracza < (len(temp_gracze) - len(foldy)):
+                    id_gracza += 1
+            else:
+                akcje_gracza(id_gracza)
+                if id_gracza < (len(temp_gracze) - len(foldy)):
+                    id_gracza += 1
+
             if not sprawdzStanRundy():
                 break
-            print(f"aktualne id gracza {id_gracza}")
+
+            #print(f"aktualne id gracza {gracze[id_gracza]}(na koncu funkcji) {id_gracza}")
+            #print(f"Tab Gracze: {temp_gracze}")
+
         wybierz_zwyciezce()
+        sprawdzBankrut()
         przesunIndexGraczy()
         if len(gracze) == 1:
             print(f"\n\nGratulacje {gracze[0]}! WYGRAŁEŚ {pieniadze[0]}!!!")
