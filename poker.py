@@ -2,10 +2,12 @@
 
 #Wersja nw jaka
 #Program wpada w nieskonczona petle gdy poda sie mu niższe podbicie niż najwyższy zakład/poprzednie podbicie
+import time
 
 gracze = []
 pieniadze = []
 bets = []
+temp_bets = []
 pula = 0
 small_blind = 0
 big_blind = 0
@@ -26,6 +28,7 @@ def dodaj_graczy():
         gracze.append(input(f"Podaj nazwę gracza {gracz + 1}: "))
         pieniadze.append(int(input(f"Ile pieniędzy ma {gracze[gracz]}? ")))
         bets.append(0)
+        temp_bets.append(0)
 
 def ustaw_blindy():
     global pula
@@ -48,11 +51,13 @@ def wyrownajZaklad(id_gracza): # Oddzielna funkcja wywoływana gdy chcesz wyrown
     if najwyzszyBet < pieniadze[id_gracza]:
         pieniadze[id_gracza] -= najwyzszyBet
         bets[id_gracza] += najwyzszyBet
+        temp_bets[id_gracza] += najwyzszyBet
         pula += najwyzszyBet
         print(f"Wyrównano zakład! (suma twoich zakładów na stole to {bets[id_gracza]})\n")
     else:
         print(f"Wchodzisz all in z {pieniadze[id_gracza]}\n")
         bets[id_gracza] += pieniadze[id_gracza]
+        temp_bets[id_gracza] += najwyzszyBet
         pula += pieniadze[id_gracza]
         pieniadze[id_gracza] = 0
 
@@ -72,6 +77,7 @@ def podbijZaklad(id_gracza, podbicie): # Oddzielna funkcja wywoływana gdy chces
     if najwyzszyBet <= pieniadze[id_gracza]:
         pieniadze[id_gracza] -= najwyzszyBet
         bets[id_gracza] += najwyzszyBet
+        temp_bets[id_gracza] += najwyzszyBet
         pula += najwyzszyBet
         print(f"Podbito o {najwyzszyBet} (suma twoich zakładów na stole to {bets[id_gracza]})\n")
         check_counter = 0
@@ -93,7 +99,7 @@ def akcje_gracza(id_gracza, passy):
     if najwyzszyBet == 0 or bets[id_gracza] == najwyzszyBet:
         wartosc = int(input(f"Twoje opcje to:\n"
                             f"1. Podnieś zakład(raise), 2. Sprawdz(check), 3. Pass(fold)\n"
-                            f"Twoj zakład na stole wynosi: {bets[id_gracza]}\n"
+                            f"Twoj zakład na stole wynosi: {temp_bets[id_gracza]}\n"
                             f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
         while wartosc not in [1, 2, 3]:
             print("Podano nieprawidłową opcję!")
@@ -113,7 +119,7 @@ def akcje_gracza(id_gracza, passy):
         wartosc = int(input(f"Twoje opcje to:\n"
                             f"1. Podnieś zakład(raise), 2. Wyrownaj zakład(call), 3. Pass(fold)\n"
                             f"Aktualny najwyższy zakład to: {najwyzszyBet}\n"
-                            f"Twój zakład na stole to: {bets[id_gracza]}\n"
+                            f"Twój zakład na stole to: {temp_bets[id_gracza]}\n"
                             f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
         while wartosc not in [1, 2, 3]:
             print("Podano nieprawidłową opcję!")
@@ -150,6 +156,7 @@ def akcje_gracza(id_gracza, passy):
         print(najwyzszyBet)
         print(pieniadze)
         print("\n")
+        time.sleep(1000)
 
 def sprawdzStanRundy():
     global pula, karty_na_stole, check_counter, najwyzszyBet
@@ -158,8 +165,16 @@ def sprawdzStanRundy():
         karty_na_stole += 1
         check_counter = 0
         najwyzszyBet = 0
+        for element in bets:
+            element = 0
+            print("Bety zostały wyzerowane")
     if karty_na_stole >= 5:
         print("5 kart na stole, czas na pokazanie rąk!")
+        #twmp bwt zerowanie
+        for element in temp_bets:
+            element = 0
+            print("Temp_Bety zostały wyzerowane")
+        karty_na_stole = 3
         return False
     return True
 
@@ -186,11 +201,12 @@ def gra():
     wprowadz_blindy()
     while True:
         passy = []
-        id_gracza = 0
+        id_gracza = -1
         ustaw_blindy()
         while True:
             if len(passy) == len(gracze) - 1:
                 break
+            id_gracza += 1
             if id_gracza == len(gracze):
                 id_gracza = 0
             if id_gracza in passy:
@@ -199,7 +215,6 @@ def gra():
             akcje_gracza(id_gracza, passy)
             if not sprawdzStanRundy():
                 break
-            id_gracza += 1
             print(f"aktualne id gracza {id_gracza}")
         wybierz_zwyciezce()
         przesunIndexGraczy()
