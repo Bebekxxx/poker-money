@@ -1,116 +1,163 @@
-#Kompletny remake kodu zrobiony na funkcjach i zmiennych globalnych
-#Zmieniłem nazwy zmiennych na bardziej czytelne
-#Dodałem funkcje, które odpowiadają za różne etapy gry
-#Dodałem funkcję main gry, która odpowiada za całą rozgrywkę
-#Dodałem funkcję sprawdz_stan_gry, która sprawdza czy gra się skończyła
-#Dodałem funkcję akcje_gracza, która odpowiada za akcje gracza
-#Dodałem funkcję ustaw_blindy, która ustawia blinde
-#Dodałem funkcję dodaj_graczy, która dodaje graczy i ustawia kwoty startowe
-#Dodałem funkcję wprowadz_blindy, która wprowadza wartości blindów
-#Dodałem zmienną globalną karty_na_stole, która odpowiada za ilość kart na stole
-#Dodałem zmienną globalną big_blind, która odpowiada za wartość dużego blinda
-#Dodałem zmienną globalną small_blind, która odpowiada za wartość małego blinda
-#Dodałem zmienną globalną pula, która odpowiada za wartość puli
-#Dodałem zmienną globalną zaklady, która odpowiada za wartość zakładów
-#Dodałem zmienną globalną pieniadze, która odpowiada za wartość pieniędzy graczy
-#Dodałem zmienną globalną gracze, która odpowiada za wartość graczy
-#Dodałem zmienną globalną ilu_graczy, która odpowiada za ilość graczy
-#Dodałem zmienną globalną karty, która odpowiada za wartość kart
-#Dodałem zmienną globalną karty_na_stole, która odpowiada za wartość kart na stole
-#Dodałem zmienną globalną check_counter, która odpowiada za wartość checków
+# Witaj w No-Limit Texas Hold'em Poker-Money APP!
 
+#Wersja nw jaka
+#Program wpada w nieskonczona petle gdy poda sie mu niższe podbicie niż najwyższy zakład/poprzednie podbicie
 
 gracze = []
 pieniadze = []
-zaklady = []
+bets = []
 pula = 0
 small_blind = 0
 big_blind = 0
-karty_na_stole = 0
+karty_na_stole = 3
 check_counter = 0
+najwyzszyBet = 0
 
 def wprowadz_blindy():
     global small_blind, big_blind
-    small_blind = int(input("Podaj wartość małego blinda: "))
+    small_blind = int(input("\nPodaj wartość małego blinda: "))
     big_blind = int(input("Podaj wartość dużego blinda: "))
+    print("\n")
 
 def dodaj_graczy():
-    global gracze, pieniadze, zaklady
-    while True:
-        imie = input("Podaj nazwę gracza (X aby zakończyć dodawanie graczy): ")
-        if imie.lower() == "x":
-            break
-        gracze.append(imie)
-    kasa_na_start = int(input("Podaj kwotę z jaką każdy zaczyna grę: "))
-    for _ in gracze:
-        pieniadze.append(kasa_na_start)
-        zaklady.append(0)
+    global gracze, pieniadze, bets
+    liczbaGraczy = int(input("Podaj liczbę graczy: "))
+    for gracz in range(liczbaGraczy):
+        gracze.append(input(f"Podaj nazwę gracza {gracz + 1}: "))
+        pieniadze.append(int(input(f"Ile pieniędzy ma {gracze[gracz]}? ")))
+        bets.append(0)
 
 def ustaw_blindy():
     global pula
     if len(gracze) > 1:
         pieniadze[0] -= small_blind
-        zaklady[0] += small_blind
+        # bets[0] += small_blind
         pula += small_blind
         pieniadze[1] -= big_blind
-        zaklady[1] += big_blind
+        # bets[1] += big_blind
         pula += big_blind
         print(f"Gracz {gracze[0]} postawił małego blinda, a gracz {gracze[1]} postawił dużego blinda\n")
 
-def akcje_gracza(id_gracza, passy):
-    global pula, check_counter
-    print(f"Aktualny gracz to {gracze[id_gracza]} ({pieniadze[id_gracza]})")
-    print(f"Aktualna pula: {pula}\n")
-    wartosc = int(input(f"Opcje:\n1. Podnieś zakład\n2. Check\n3. Pass\n69. Koniec rundy\n{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
-    if wartosc == 1:
-        podbicie = int(input("Podaj o ile podbijasz: "))
-        if podbicie <= pieniadze[id_gracza]:
-            pieniadze[id_gracza] -= podbicie
-            zaklady[id_gracza] += podbicie
-            pula += podbicie
-            print(f"Podbito o {podbicie} (suma twoich zakładów na stole to {zaklady[id_gracza]})\n")
-            check_counter = 0
-            for i in range(len(gracze)):
-                if i == id_gracza or i in passy:
-                    continue
-                decyzja = int(input(f"{gracze[i]}({pieniadze[i]})- 1.Wyrównaj 2.Pass: "))
-                if decyzja == 1:
-                    if podbicie <= pieniadze[i]:
-                        pieniadze[i] -= podbicie
-                        zaklady[i] += podbicie
-                        pula += podbicie
-                        print("Wyrównano zakład!\n")
-                    else:
-                        print(f"Za mało kasy: wchodzisz all in z {pieniadze[i]}\n")
-                        zaklady[i] += pieniadze[i]
-                        pula += pieniadze[i]
-                        pieniadze[i] = 0
-                elif decyzja == 2:
-                    passy.append(i)
-                    print(f"Gracz {gracze[i]} passuje! (cipka)\n")
-                else:
-                    print("Podano złą opcję!\n")
-        else:
-            print("Masz zbyt mało środków!")
-    elif wartosc == 2:
-        print(f"Gracz {gracze[id_gracza]} check\n")
-        check_counter += 1
-    elif wartosc == 3:
-        passy.append(id_gracza)
-        print(f"Gracz {gracze[id_gracza]} passuje\n")
-        check_counter = 0
-    elif wartosc == 69:
-        return False
-    else:
-        print("Podano nieprawidłową opcję!")
-    return True
+def przesunIndexGraczy():
+    pierwszyElemnt = gracze.pop(0)
+    gracze.append(pierwszyElemnt)
+    print("Gracze: ", gracze)
 
-def sprawdz_stan_gry():
-    global pula, karty_na_stole, check_counter
+def wyrownajZaklad(id_gracza): # Oddzielna funkcja wywoływana gdy chcesz wyrownac ale nie przbijac zakladu
+    global najwyzszyBet,pula
+    if najwyzszyBet < pieniadze[id_gracza]:
+        pieniadze[id_gracza] -= najwyzszyBet
+        bets[id_gracza] += najwyzszyBet
+        pula += najwyzszyBet
+        print(f"Wyrównano zakład! (suma twoich zakładów na stole to {bets[id_gracza]})\n")
+    else:
+        print(f"Wchodzisz all in z {pieniadze[id_gracza]}\n")
+        bets[id_gracza] += pieniadze[id_gracza]
+        pula += pieniadze[id_gracza]
+        pieniadze[id_gracza] = 0
+
+def podbijZaklad(id_gracza, podbicie): # Oddzielna funkcja wywoływana gdy chcesz podbic zaklad
+    global najwyzszyBet,pula,check_counter
+    print(f"Przed wykonaniem funkcji najwyzszyBet: {najwyzszyBet}")
+    if najwyzszyBet == 0:
+        najwyzszyBet = podbicie
+    else:
+        najwyzszyBet += podbicie
+    print(f"Po wykonaniu funkcji najwyzszyBet: {najwyzszyBet}")
+
+    print(f"Najwyższy zakład wynosi: {najwyzszyBet}")
+
+    if najwyzszyBet == pieniadze[id_gracza]:
+        print(f"Gracz {gracze[id_gracza]} wchodzi all in za {pieniadze[id_gracza]}")
+    if najwyzszyBet <= pieniadze[id_gracza]:
+        pieniadze[id_gracza] -= najwyzszyBet
+        bets[id_gracza] += najwyzszyBet
+        pula += najwyzszyBet
+        print(f"Podbito o {najwyzszyBet} (suma twoich zakładów na stole to {bets[id_gracza]})\n")
+        check_counter = 0
+
+def check(id_gracza):
+    global check_counter
+    print(f"Gracz {gracze[id_gracza]} checkuje")
+    check_counter += 1
+    print(f"check_counter:{check_counter} \n")
+
+def fold(id_gracza, passy):
+    passy.append(id_gracza)
+    print(f"Gracz {gracze[id_gracza]} passuje\n")
+
+def akcje_gracza(id_gracza, passy):
+    global najwyzszyBet, pula
+    print(f"Aktualny gracz to {gracze[id_gracza]}")
+    print(f"Aktualna pula na stole wynosi: {pula}")
+    if najwyzszyBet == 0 or bets[id_gracza] == najwyzszyBet:
+        wartosc = int(input(f"Twoje opcje to:\n"
+                            f"1. Podnieś zakład(raise), 2. Sprawdz(check), 3. Pass(fold)\n"
+                            f"Twoj zakład na stole wynosi: {bets[id_gracza]}\n"
+                            f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+        while wartosc not in [1, 2, 3]:
+            print("Podano nieprawidłową opcję!")
+            wartosc = int(input(f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+        if wartosc == 1:
+            podbicie = int(input("Podaj o ile podbijasz: "))
+            while podbicie > pieniadze[id_gracza]:
+                print(f"Masz za mało pieniędzy na podbicie! Twoje pieniądze: {pieniadze[id_gracza]}")
+                podbicie = int(input("Podaj o ile podbijasz: "))
+            podbijZaklad(id_gracza,podbicie)
+        elif wartosc == 2:
+            check(id_gracza)
+        elif wartosc == 3:
+            fold(id_gracza, passy)
+
+    elif bets[id_gracza] < najwyzszyBet:
+        wartosc = int(input(f"Twoje opcje to:\n"
+                            f"1. Podnieś zakład(raise), 2. Wyrownaj zakład(call), 3. Pass(fold)\n"
+                            f"Aktualny najwyższy zakład to: {najwyzszyBet}\n"
+                            f"Twój zakład na stole to: {bets[id_gracza]}\n"
+                            f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+        while wartosc not in [1, 2, 3]:
+            print("Podano nieprawidłową opcję!")
+            wartosc = int(input(f"{gracze[id_gracza]} ({pieniadze[id_gracza]}): "))
+        if wartosc == 1:
+            podbicie = int(input("Podaj o ile podbijasz: "))
+            while podbicie > pieniadze[id_gracza]:
+                print(f"Masz za mało pieniędzy na podbicie! Twoje pieniądze: {pieniadze[id_gracza]}")
+                podbicie = int(input("Podaj o ile podbijasz: "))
+                while podbicie < najwyzszyBet:
+                    print(f"Podbicie musi być większe niż {najwyzszyBet}!")
+                    podbicie = int(input("Podaj o ile podbijasz: "))
+            podbijZaklad(id_gracza, podbicie)
+        elif wartosc == 2:
+            if pieniadze[id_gracza] < najwyzszyBet:
+                print(f"Masz tylko {pieniadze[id_gracza]} żetonow. Czy chcesz wejsc all in?\n")
+                czyWchodziszAllIn = int(input("1.Tak 2.Nie: "))
+                while czyWchodziszAllIn not in [1, 2]:
+                    print("Podano nieprawidłową opcję!")
+                    czyWchodziszAllIn = int(input("1.Tak 2.Nie(Jesli nie wchodzisz all in to pasujesz): "))
+                if czyWchodziszAllIn == 1:
+                    wyrownajZaklad(id_gracza)
+                elif czyWchodziszAllIn == 2:
+                    fold(id_gracza, passy)
+            else:
+                wyrownajZaklad(id_gracza)
+                check(id_gracza)
+        elif wartosc == 3:
+            fold(id_gracza, passy)
+    else:
+        print("Coś poszło nie tak")
+        print(f"Twoje zakłady: {bets[id_gracza]}")
+        print(bets)
+        print(najwyzszyBet)
+        print(pieniadze)
+        print("\n")
+
+def sprawdzStanRundy():
+    global pula, karty_na_stole, check_counter, najwyzszyBet
     if check_counter == len(gracze):
         print("Wykładaj kolejna karte na stół")
         karty_na_stole += 1
         check_counter = 0
+        najwyzszyBet = 0
     if karty_na_stole >= 5:
         print("5 kart na stole, czas na pokazanie rąk!")
         return False
@@ -124,19 +171,15 @@ def wybierz_zwyciezce():
     winner = int(input("\nZwycięzca: ")) - 1
     pieniadze[winner] += pula
     pula = 0
-    for i in range(len(zaklady)):
-        zaklady[i] = 0
+    for i in range(len(bets)):
+        bets[i] = 0
     for i in range(len(pieniadze)):
         if pieniadze[i] == 0:
             print(f"Gracz {gracze[i]} zbankrutował i odpada z gry!")
             gracze.pop(i)
             pieniadze.pop(i)
-            zaklady.pop(i)
+            bets.pop(i)
             break
-    if len(gracze) == 1:
-        print(f"\n\nGratulacje {gracze[0]}! WYGRAŁEŚ {pieniadze[0]}!!!")
-        return False
-    return True
 
 def gra():
     dodaj_graczy()
@@ -153,13 +196,16 @@ def gra():
             if id_gracza in passy:
                 id_gracza += 1
                 continue
-            if not akcje_gracza(id_gracza, passy):
+            akcje_gracza(id_gracza, passy)
+            if not sprawdzStanRundy():
                 break
             id_gracza += 1
-        if not sprawdz_stan_gry():
+            print(f"aktualne id gracza {id_gracza}")
+        wybierz_zwyciezce()
+        przesunIndexGraczy()
+        if len(gracze) == 1:
+            print(f"\n\nGratulacje {gracze[0]}! WYGRAŁEŚ {pieniadze[0]}!!!")
             break
-    if not wybierz_zwyciezce():
-        return
 
 if __name__ == "__main__":
     gra()
