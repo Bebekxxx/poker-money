@@ -91,11 +91,6 @@ def wyrownajZaklad(id_gracza):
         temp_bets[id_gracza] += pieniadze[id_gracza]
         pula += pieniadze[id_gracza]
         pieniadze[id_gracza] = 0
-    print("Najwyzszy bet: ", highets_bet)
-    print("pieniadze gracza: ", pieniadze[id_gracza])
-    print("bet gracza: ", bets[id_gracza])
-    print("temp bet gracza: ", temp_bets[id_gracza])
-    print("pula: ", pula)
 
 def podbijZaklad(id_gracza, podbicie):
     global highets_bet, pula, check_counter
@@ -212,7 +207,7 @@ def sprawdzStanRundy():
     if check_counter == len(gracze) - len(foldy):
         cards_on_the_table += 1
         if cards_on_the_table > 5:
-            print("5 kart na stole, czas na pokazanie rąk!")
+            print("Koniec rundy, czas na pokazanie waszych kart!")
             cards_on_the_table = 3
             foldy.clear()
             for i in range(len(temp_bets)):
