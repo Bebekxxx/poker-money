@@ -261,9 +261,11 @@ def gra(): # Main Game Function
                 id_gracza += 1 # Next player
             if not sprawdzStanRundy(): # Check if round is over
                 break
+
         wybierz_zwyciezce() # Choose the winner
+        przesunIndexGraczy()  # Move players' indexes
         sprawdzBankrut() # Check if any player has gone bankrupt
-        przesunIndexGraczy() # Move players' indexes
+
         if len(gracze) == 1: # Check if there is only one player left and declare him the winner
             print(f"\n\nGratulacje {gracze[0]}! WYGRAŁEŚ {pieniadze[0]}!!!")
             break
