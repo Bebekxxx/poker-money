@@ -16,7 +16,7 @@
 import time
 from enum import Enum
 
-class wyborGracza(Enum): # Class for player's choices(it was for educational purposes XD)
+class wyborGracza(Enum):# Class for player's choices(it was for educational purposes XD)
     RAISE = 1
     CHECK = 2
     FOLD = 3
@@ -33,7 +33,7 @@ cards_on_the_table = 3 # Number of cards on the table(its starts form Flop phase
 check_counter = 0 # Counter for players who have checked in current phase
 highets_bet = 0 # Highest bet in current phase(so players can raise or call, based on that information)
 
-def wprowadz_blindy():
+def wprowadz_blindy(): #Set values of blind (only used once at the beginning of the game)
     global small_blind, big_blind
     while True:
         try:
@@ -45,7 +45,7 @@ def wprowadz_blindy():
             print("Wprowadź wartość liczbową!")
     print("\n")
 
-def dodaj_graczy():
+def dodaj_graczy(): # Adds players and sets their money
     global gracze, pieniadze, bets
     liczbaGraczy = int(input("Podaj liczbę graczy: "))
     for index in range(liczbaGraczy):
@@ -57,7 +57,7 @@ def dodaj_graczy():
     print(f"Gracze: {gracze}")
     print(f"Pieniądze graczy: {pieniadze}")
 
-def ustaw_blindy():
+def ustaw_blindy(): # Sets blinds (used at the beggining of each round), it always with [0] and [1] indexes because of przesunIndexGraczy function moving indexes
     global pula
     if len(gracze) > 1:
         pieniadze[0] -= small_blind
@@ -66,7 +66,7 @@ def ustaw_blindy():
         pula += big_blind
         print(f"Gracz {gracze[0]} postawił małego blinda, a gracz {gracze[1]} postawił dużego blinda\n")
 
-def przesunIndexGraczy():
+def przesunIndexGraczy(): # Moves players' indexes(used at the end of each round)
     gracze.append(gracze.pop(0))
     pieniadze.append(pieniadze.pop(0))
     bets.append(bets.pop(0))
@@ -94,14 +94,16 @@ def wyrownajZaklad(id_gracza):
 
 def podbijZaklad(id_gracza, podbicie):
     global highets_bet, pula, check_counter
-    #betDanegoGracza = bets[id_gracza] # Zmienna pomocnicza, aby nie zmieniać wartości bets[id_gracza]
+    # tempHighetsBet = highets_bet
     highets_bet += (podbicie - bets[id_gracza])
+    if highets_bet == pieniadze[id_gracza]:
+        print(f"\nWchodzisz all in za {pieniadze[id_gracza]}")
     if highets_bet <= pieniadze[id_gracza]:
         pieniadze[id_gracza] -= highets_bet
         bets[id_gracza] += highets_bet
         temp_bets[id_gracza] += highets_bet
         pula += highets_bet
-        print(f"Podbito o {highets_bet} [suma twoich zakładów na stole(w tej fazie) to {bets[id_gracza]}]\n")
+        print(f"Podbito o {highets_bet} [suma twoich zakładów na stole(w tej fazie) to {bets[id_gracza]}]")
         print("Twoje pieniądze: ", pieniadze[id_gracza])
         check_counter = 0
 
@@ -176,7 +178,7 @@ def akcje_gracza(id_gracza):
                     break
                 except ValueError:
                     print("Podano nieprawidłową wartość!")
-            while podbicie > pieniadze[id_gracza]:
+            while (podbicie + highets_bet) > pieniadze[id_gracza]:
                 print(f"Masz za mało pieniędzy na podbicie! Twoje pieniądze: {pieniadze[id_gracza]}")
                 podbicie = int(input("Podaj o ile podbijasz: "))
             podbijZaklad(id_gracza, podbicie)
@@ -202,6 +204,11 @@ def akcje_gracza(id_gracza):
         print("\n")
         time.sleep(1000)
 
+def sprawdzAllIn(id_gracza):
+    if pieniadze[id_gracza] == 0:
+        return True
+    return False
+
 def sprawdzStanRundy():
     global pula, cards_on_the_table, check_counter, highets_bet
     if check_counter == len(gracze) - len(foldy):
@@ -209,9 +216,6 @@ def sprawdzStanRundy():
         if cards_on_the_table > 5:
             print("Koniec rundy, czas na pokazanie waszych kart!")
             cards_on_the_table = 3
-            foldy.clear()
-            for i in range(len(temp_bets)):
-                temp_bets[i] = 0
             for i in range(len(bets)):
                 bets[i] = 0
             return False
@@ -239,9 +243,31 @@ def wybierz_zwyciezce():
     for i, gracz in enumerate(gracze):
         if i not in foldy:
             print(f"{i+1}. {gracz}")
-    winner = int(input("\nZwycięzca: ")) - 1
-    pieniadze[winner] += pula
+    while True:
+        try:
+            winner = int(input("\nZwycięzca: ")) - 1
+            break
+        except ValueError:
+            print("Podaj prawidłową wartość!")
+
+    # Check if winner went all-in, then calculate the winnings so winner is capped at his all-in bet
+    if pieniadze[winner] == 0:  # Player went all-in
+        all_in_bet = temp_bets[winner]
+        total_won = 0
+        for i in range(len(gracze)):
+            if i != winner:
+                bet_to_win = min(all_in_bet, temp_bets[i])
+                pieniadze[i] += (temp_bets[i] - bet_to_win)
+                total_won += bet_to_win
+        pieniadze[winner] += total_won
+    else:
+        pieniadze[winner] += pula
+
     pula = 0
+    foldy.clear()
+
+    for i in range(len(temp_bets)):
+        temp_bets[i] = 0
 
 def gra(): # Main Game Function
     global check_counter
@@ -250,16 +276,18 @@ def gra(): # Main Game Function
     while True: # Round Loop
         id_gracza = 0 # Start with first player
         ustaw_blindy() # Set blinds
-        while True: # Phase Loop
-            if id_gracza >= len(gracze): # Check if all players have made their moves
-                id_gracza = 0 # Start from the first player
-            if id_gracza in foldy: # Skip player if he has folded
-                #check_counter += 1 # Increment check counter if current player has folded
-                id_gracza += 1 # Move to the next player if current player has folded
-            else:
-                akcje_gracza(id_gracza) # Player's turn
-                id_gracza += 1 # Next player
-            if not sprawdzStanRundy(): # Check if round is over
+        while True:  # Phase Loop
+            if id_gracza >= len(gracze):  # Check if all players have made their moves
+                id_gracza = 0  # Start from the first player
+            if id_gracza not in foldy:  # Skip player if he has folded
+                if sprawdzAllIn(id_gracza):  # Check if player went all-in
+                    print(f"\nGracz {gracze[id_gracza]} wszedł all in za {temp_bets[id_gracza]}")
+                    print("Immediate check")
+                    check(id_gracza)
+                else:
+                    akcje_gracza(id_gracza)  # Player's turn
+            id_gracza += 1  # Next player
+            if not sprawdzStanRundy():  # Check if round is over
                 break
 
         wybierz_zwyciezce() # Choose the winner
