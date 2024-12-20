@@ -1,5 +1,5 @@
 #Witamy W Poker Money App!
-#Version 0.7
+#Version 0.7.6
 
 #Aplikacja sluży do liczenia pieniedzy w grze w poker
 #App is used to count money in poker game
@@ -8,6 +8,7 @@
 #We are really grateful for sugestions and contributions from our friends: Bolo, Bartek, Hubert, Michu
 #Date: 2024-08-12
 
+#Test comment
 #Cheers! MD
 
 import time
